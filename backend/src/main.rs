@@ -2,6 +2,8 @@ use rocket::{get, launch, routes};
 use rocket::fs::{FileServer, Options, relative};
 use rocket_dyn_templates::{context, Template};
 use rocket::request::FlashMessage;
+use qrcode_generator::QrCodeEcc;
+
 
 
 #[launch]
@@ -17,6 +19,8 @@ fn rocket() -> _ {
 
 #[get("/")]
 async fn root() -> Template {
+    qrcode_generator::to_png_to_file("Hello world!", QrCodeEcc::Low, 1024, "public/data/file_output.png").unwrap();
+
     Template::render("welcome", context! { message: "Welcome to TipJar"})
 }
 #[get("/register")]

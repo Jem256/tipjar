@@ -13,3 +13,8 @@ serde_json = "1.0.44"
 serde_derive = "1.0.104"
 rocket_dyn_templates = { version = "0.1.0", features = ["handlebars", "tera"] }
 qrcode-generator="4.1.9"
+tonic_lnd="0.5.1"
+log = "0.4.21"
+chrono = { version = "0.4.24", features = ["serde"] }
+dotenvy = "0.15"
+diesel = { version = "2.1.5", default-features = false, features = ["postgres"] }

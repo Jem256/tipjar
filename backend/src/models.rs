@@ -1,14 +1,17 @@
-use std::arch::aarch64::float32x2_t;
-use serde::{Serialize, Deserialize};
-use diesel::prelude::Queryable;
 
-#[derive(Debug, Serialize, Deserialize,Queryable)]
+use serde::{Serialize, Deserialize};
+use diesel::prelude::*;
+use diesel::sql_types::{Decimal, Float};
+
+#[derive(Queryable, Selectable)]
+#[diesel(table_name = crate::schema::users)]
+#[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct User {
-    pub id: String,
-    pub name: String,
+    pub id: i32,
     pub email: String,
     pub slug: String,
-    pub balance: float32x2_t
+    pub password:String,
+    pub balance: Decimal
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
@@ -16,6 +19,7 @@ pub struct CreateUserRequest {
     pub name: String,
     pub email: String,
     pub password: String,
+    pub slug:String
 }
 
 

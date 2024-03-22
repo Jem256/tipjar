@@ -1747,7 +1747,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "tipjar"
+name = "tipjarbackend"
 version = "0.1.0"
 dependencies = [
  "chrono",

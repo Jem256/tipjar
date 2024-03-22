@@ -3,7 +3,7 @@ CREATE TABLE users (
                        email VARCHAR(255) NOT NULL,
                        password VARCHAR(255) NOT NULL,
                        slug VARCHAR(255) NOT NULL,
-                       balance DECIMAL(10, 2)
+                       balance DECIMAL(255)
 );
 
 INSERT INTO users (email, password, slug, balance)

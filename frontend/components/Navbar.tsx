@@ -10,7 +10,7 @@ const Navbar = () => {
   const [state, setState] = useState(false);
 
   const navigation = [
-      { title: 'Homepage', path: '/' },
+      { title: 'Home', path: '/' },
       { title: 'Login', path: '/login' },
   ];
 
@@ -47,6 +47,7 @@ const Navbar = () => {
                               alt='logo'
                               width={100}
                               height={100}
+                              className='contain'
                           />
                           {/* <div className='font-bold text-lg'>TipJar</div> */}
                       </Link>

@@ -48,9 +48,11 @@ export default function RootLayout({
             <head>
                 <PlausibleProvider domain='/' />
             </head>
-            <body className={inter.className}>
+            <body className={`flex flex-col min-h-screen ${inter.className}`}>
                 <Navbar />
-                <main>{children}</main>
+                <main className='flex-1 flex justify-center items-center'>
+                    {children}
+                </main>
                 <Analytics />
                 <Footer />
             </body>

@@ -5,7 +5,7 @@ import NavLink from '../components/NavLink';
 export default function Home() {
     return (
         <section>
-            <div className='py-28 text-gray-600 flex justify-center items-center'>
+            <div className='text-gray-600'>
                 <div className='space-y-5 max-w-4xl mx-auto text-center'>
                     <h1 className='text-4xl text-gray-800 font-extrabold mx-auto sm:text-6xl'>
                         Generate your next payment Link in seconds

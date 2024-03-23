@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { FaInstagram, FaFacebook, FaTwitter } from 'react-icons/fa';
 
 const Footer = () => (
-    <footer className='bg-gray-900 text-white py-8 fixed bottom-0 w-full'>
+    <footer className='bg-gray-900 text-white py-8 mt-12 w-full'>
         <div className='container mx-auto flex justify-between items-center'>
             <div className='flex items-center gap-x-6'>
                 {/* Social Icons */}

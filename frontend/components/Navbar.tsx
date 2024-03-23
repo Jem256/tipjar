@@ -52,6 +52,7 @@ const Navbar = () => {
                       </Link>
                       <div className='md:hidden'>
                           <button
+                              type='button'
                               role='button'
                               aria-label='Open the menu'
                               className='text-gray-500 hover:text-gray-800'
@@ -109,7 +110,7 @@ const Navbar = () => {
                           })}
                           <li>
                               <NavLink
-                                  href='/start'
+                                  href='/register'
                                   className='block font-medium text-sm text-white bg-gray-800 hover:bg-gray-600 active:bg-gray-900 md:inline'
                               >
                                   Sign Up

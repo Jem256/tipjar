@@ -6,9 +6,12 @@ diesel::table! {
         #[max_length = 255]
         email -> Varchar,
         #[max_length = 255]
+        name -> Varchar,
+        #[max_length = 255]
         password -> Varchar,
         #[max_length = 255]
         slug -> Varchar,
-        balance -> Nullable<Numeric>,
+        #[max_length = 255]
+        balance -> Varchar,
     }
 }

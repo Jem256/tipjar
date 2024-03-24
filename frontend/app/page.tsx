@@ -16,7 +16,7 @@ export default function Home() {
                     </p>
                     <div className='flex items-center justify-center gap-x-3 font-medium text-sm'>
                         <Link
-                            href='/start'
+                            href='/register'
                             className='text-white bg-gray-800 hover:bg-gray-600 active:bg-gray-900 py-2.5 px-4 text-center rounded-lg duration-150 '
                         >
                             Generate Your Link

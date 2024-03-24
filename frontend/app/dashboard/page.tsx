@@ -6,7 +6,7 @@ import Image from 'next/image';
 
 const Dashboard: React.FC = () => {
     return (
-        <div className='flex flex-col justify-center items-center bg-gray-50 py-4 px-4 sm:px-6 lg:px-8 rounded shadow-lg'>
+        <div className='bg-gray-50 py-4 px-4 sm:px-6 lg:px-8 rounded shadow-lg'>
             <div className='max-w-md w-full space-y-8'>
                 <Link href='/' className='flex items-center'>
                     <Image

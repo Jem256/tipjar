@@ -1,10 +1,20 @@
-
+use rand::distributions::{Alphanumeric, DistString};
+use rocket::serde::json::Json;
 use tonic_lnd;
 use sha2::{Sha256, Digest};
-pub async  fn connect(){
+use tonic_lnd::lnrpc::{Amount, Invoice};
+use crate::models::InvoiceDetails;
+
+
+
+pub async  fn connect(amount: i32)-> String{
+
+
     let address="https://127.0.0.1:10001";
-    let cert_file_path ="/Users/jose/.polar/networks/1/volumes/lnd/alice/tls.cert";
-    let macaroon_file_path="/Users/jose/.polar/networks/1/volumes/lnd/alice/data/chain/bitcoin/regtest/admin.macaroon";
+    //let cert_file_path ="/Users/jose/.polar/networks/1/volumes/lnd/alice/tls.cert";
+
+    let cert_file_path="/Users/jose/.polar/networks/2/volumes/lnd/alice/tls.cert";
+    let macaroon_file_path="/Users/jose/.polar/networks/2/volumes/lnd/alice/data/chain/bitcoin/regtest/admin.macaroon";
 
     let cert_path = cert_file_path.to_string();
     let macaroon_path = macaroon_file_path.to_string();
@@ -15,7 +25,9 @@ pub async  fn connect(){
         .expect("failed to connect");
 
 
-    let hex_preimage = "54686520717569636b2062726f776e19";
+    let hex_preimage = Alphanumeric.sample_string(&mut rand::thread_rng(), 32);
+
+    //let hex_preimage = "54686520717569636b2062726f776e19";
 
 
     let payment_description = b"descriptionas";
@@ -25,11 +37,11 @@ pub async  fn connect(){
     //println!("{:?}", payment_hash);
     // Compute the SHA-256 hash of the payment description
 
-    let invoice = client.lightning().add_invoice(tonic_lnd::lnrpc::Invoice{
+    let mut invoice = client.lightning().add_invoice(tonic_lnd::lnrpc::Invoice{
         memo:"sass".to_string(),
         r_preimage: Vec::from(hex_preimage),
         r_hash: vec![],
-        value: 1000,
+        value: amount as i64,
         value_msat: 0,
         settled: false,
         creation_date: 0,
@@ -54,7 +66,10 @@ pub async  fn connect(){
         is_amp: false,
         amp_invoice_state: Default::default(),
     }).await.expect("failed to get info");
+    let  payment_request = invoice.into_inner().payment_request;
 
-    println!("{:#?}", invoice);
+    payment_request
 
  }
+
+

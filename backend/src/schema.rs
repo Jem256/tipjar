@@ -1,4 +1,4 @@
-// @generated automatically by Diesel CLI.
+
 
 diesel::table! {
     users (id) {
@@ -9,6 +9,6 @@ diesel::table! {
         password -> Varchar,
         #[max_length = 255]
         slug -> Varchar,
-        balance -> Nullable<Numeric>,
+        balance -> Double,
     }
 }

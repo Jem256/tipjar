@@ -1,9 +1,10 @@
 
+
 use serde::{Serialize, Deserialize};
 use diesel::prelude::*;
-use diesel::sql_types::{Decimal, Float};
 
-#[derive(Queryable, Selectable)]
+
+#[derive(Debug, Queryable, Selectable)]
 #[diesel(table_name = crate::schema::users)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct User {
@@ -11,7 +12,7 @@ pub struct User {
     pub email: String,
     pub slug: String,
     pub password:String,
-    pub balance: Decimal
+    pub balance: f64,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
@@ -19,9 +20,7 @@ pub struct CreateUserRequest {
     pub name: String,
     pub email: String,
     pub password: String,
-    pub slug:String
 }
-
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct AuthenticateUserRequest {
@@ -33,3 +32,13 @@ pub struct AuthenticateUserRequest {
 pub struct AuthenticateUserResponse {
     pub token: String,
 }
+
+#[derive(Queryable, Debug)]
+pub struct UserDTO {
+    pub id: i32,
+    pub email: String,
+    pub slug: String,
+    pub balance: f64
+}
+
+

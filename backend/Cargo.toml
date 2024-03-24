@@ -5,6 +5,7 @@ edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [dependencies]
+
 lightning = { version = "0.0.121" }
 thiserror = "1.0.45"
 tonic_lnd = { package="fedimint-tonic-lnd", version="0.1.2", features=["lightningrpc", "routerrpc"]}
@@ -26,3 +27,4 @@ features = ["json"]
 [dependencies.bigdecimal]
 version = "0.1.0"
 features = ["serde"]
+

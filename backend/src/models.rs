@@ -1,19 +1,17 @@
-use bigdecimal::BigDecimal;
+
 use serde::{Serialize, Deserialize};
 use diesel::prelude::*;
-use diesel::sql_types::{Decimal, Float, Nullable, Numeric};
 
-#[derive(Queryable, Selectable)]
-#[diesel(table_name = crate::schema::users)]
-#[diesel(check_for_backend(diesel::pg::Pg))]
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct User {
     pub id: i32,
     pub email: String,
     pub slug: String,
-    pub password:String
-
+    pub password:String,
+    pub balance: f64,
 }
+
 #[derive(Debug, Clone, Serialize, Deserialize,Queryable, Selectable)]
 #[diesel(table_name = crate::schema::users)]
 pub struct LoggedInUser{
@@ -69,3 +67,13 @@ pub struct InvoiceDetails{
 pub struct AuthenticateUserResponse {
     pub token: String,
 }
+
+#[derive(Queryable, Debug)]
+pub struct UserDTO {
+    pub id: i32,
+    pub email: String,
+    pub slug: String,
+    pub balance: f64
+}
+
+

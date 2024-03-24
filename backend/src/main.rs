@@ -1,4 +1,6 @@
+#[macro_use] extern crate rocket;
 mod lnd;
+
 
 use diesel::dsl::host;
 use diesel::prelude::*;
@@ -8,7 +10,6 @@ use rocket::response::status::Created;
 use crate::lnd::connect;
 use crate::schema::users::dsl::*;
 use rocket::serde::json::Json;
-use crate::models::RegisterUserRequest;
 
 use self::models::*;
 
@@ -16,10 +17,15 @@ mod database;
 mod schema;
 mod models;
 
+// use crate::schema::users;
+// use serde::{Serialize, Deserialize};
+// use rocket::serde::json::Json;
+// use rocket::contrib::json::Json;
+
+
 #[launch]
 fn rocket() -> _ {
     rocket::build()
-
         // serve content from disk
         .mount("/public", FileServer::new(relative!("/public"), Options::Missing | Options::NormalizeDirs))
         // register routes
@@ -59,7 +65,10 @@ fn rocket() -> _ {
 
     let success="success".to_string();
     Json(success)
+
 }
+
+
 /*c
 * This function will login our user
 * upon login the user will redirect to dashboard
@@ -104,8 +113,6 @@ pub fn login(login_details: Json<LoginRequest>)->Json<UserResponse>{
         }
     }
 
-
-
 }
 
 /*
@@ -113,12 +120,8 @@ pub fn login(login_details: Json<LoginRequest>)->Json<UserResponse>{
 * Function will return and
 
  */
-
-
-
 #[post("/generate-invoice/<req_slug>",format = "json", data = "<payment_details>")]
-pub async fn generate_invoice(req_slug:String, payment_details: Json<PaymentDetails>) ->Json<InvoiceDetails>{
-
+pub async fn generate_invoice(req_slug:String, payment_details: Json<PaymentDetails>) ->Json<InvoiceDetails> {
     use crate::schema::users;
     let connection = &mut database::establish_connection();
     let user_result = users::table
@@ -132,8 +135,8 @@ pub async fn generate_invoice(req_slug:String, payment_details: Json<PaymentDeta
 
             //save the payment request and the amount in a user transactions table
             //payment_request,amount and status,user_id,slug
-            let invoice_details=InvoiceDetails{
-                amount_in_satoshi:payment_details.amount_in_satoshi,
+            let invoice_details = InvoiceDetails {
+                amount_in_satoshi: payment_details.amount_in_satoshi,
                 payment_request
             };
             Json(invoice_details)
@@ -143,14 +146,25 @@ pub async fn generate_invoice(req_slug:String, payment_details: Json<PaymentDeta
         }
 
         _ => {
-            let res=InvoiceDetails{payment_request:"".parse().unwrap(),amount_in_satoshi:0 };
+            let res = InvoiceDetails { payment_request: "".parse().unwrap(), amount_in_satoshi: 0 };
             Json(res)
         }
     }
-
-
 }
 
+
+
+// #[get("/users")]
+// async fn get_all_users() -> Result<Json<Vec<UserDTO>>, String> {
+//   use crate::schema::users::dsl::*;
+//
+//   let connection: PgConnection = database::establish_connection();
+//
+//   match users.load::<UserDTO>(&mut connection) {
+//     Ok(all_users) => Ok(Json(all_users)),
+//     Err(err) => Err(format!("Error fetching users: {}", err)),
+//   }
+// }
 
 
 

@@ -1,9 +1,30 @@
-// pages/login.tsx
-
-import React from 'react';
+import React, { useState } from 'react';
 import { FaLock } from 'react-icons/fa';
+import { logIn } from '../services/api';
 
 const Login: React.FC = () => {
+    const [formData, setFormData] = useState({
+        email: '',
+        password: '',
+    });
+
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setFormData({
+            ...formData,
+            [e.target.name]: e.target.value,
+        });
+    };
+
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        try {
+            const response = await logIn(formData);
+            console.log(response); // Handle successful login
+        } catch (error) {
+            console.error(error); // Handle login error
+        }
+    };
+
     return (
         <div className='px-4 sm:px-6 lg:px-8'>
             <div className='max-w-md w-full space-y-8'>
@@ -12,7 +33,7 @@ const Login: React.FC = () => {
                         Sign in to your account
                     </h2>
                 </div>
-                <form className='mt-8 space-y-6' action='#' method='POST'>
+                <form className='mt-8 space-y-6' onSubmit={handleSubmit}>
                     <input type='hidden' name='remember' value='true' />
                     <div className='rounded-md shadow-sm space-y-6'>
                         <div>
@@ -27,6 +48,7 @@ const Login: React.FC = () => {
                                 required
                                 className='appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-gray-500 focus:border-gray-500 focus:z-10 sm:text-sm'
                                 placeholder='Email address'
+                                onChange={handleInputChange}
                             />
                         </div>
                         <div>
@@ -41,6 +63,7 @@ const Login: React.FC = () => {
                                 required
                                 className='appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-gray-500 focus:border-gray-500 focus:z-10 sm:text-sm'
                                 placeholder='Password'
+                                onChange={handleInputChange}
                             />
                         </div>
                     </div>
@@ -77,7 +100,6 @@ const Login: React.FC = () => {
                             className='group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-gray-800 hover:bg-gray-600 active:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:bg-gray-500'
                         >
                             <span className='absolute left-0 inset-y-0 flex items-center pl-3'>
-                                {/* <!-- Heroicon name: solid/lock-closed --> */}
                                 <FaLock />
                             </span>
                             Sign in

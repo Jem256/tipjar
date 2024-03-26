@@ -1,16 +1,11 @@
-#[macro_use] extern crate rocket;
-
-
+#[macro_use]
+extern crate rocket;
 
 use diesel::prelude::*;
 use rocket::{get, launch, post, routes};
-use rocket::response::status::Created;
-use crate::lnd::connect;
 use crate::schema::users::dsl::*;
 use rocket::serde::json::Json;
 use crate::invoices::invoice_look_up;
-use crate::schema::user_transactions;
-use crate::schema::user_transactions::user_id;
 use rocket::http::Header;
 use rocket::{Request, Response};
 use rocket::fairing::{Fairing, Info, Kind};
@@ -24,13 +19,6 @@ mod models;
 mod invoices;
 
 mod lnd;
-// use crate::schema::users;
-// use serde::{Serialize, Deserialize};
-// use rocket::serde::json::Json;
-// use rocket::contrib::json::Json;
-
-
-pub struct CORS;
 
 pub struct Cors;
 
@@ -190,8 +178,8 @@ pub async fn generate_invoice(req_slug:String, payment_details: Json<PaymentDeta
 
 #[get("/refresh/<incoming_user_id>")]
 pub async fn refresh_invoices(incoming_user_id:i32){
-    use self::schema::user_transactions::dsl::*;
-    use crate::schema::user_transactions;
+    //use self::schema::user_transactions::dsl::*;
+    //use crate::schema::user_transactions;
     use crate::schema::users;
     let connection = &mut database::establish_connection();
     let user = users::table

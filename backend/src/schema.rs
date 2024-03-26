@@ -5,9 +5,9 @@ diesel::table! {
         id -> Int4,
         user_id -> Int4,
         amount_in_satoshi -> Int4,
-        #[max_length = 255]
+        #[max_length = 2000]
         payment_request -> Varchar,
-        #[max_length = 500]
+        #[max_length = 2000]
         payment_addr -> Varchar,
         status -> Int4,
     }

@@ -1,15 +1,19 @@
 #[macro_use] extern crate rocket;
-mod lnd;
 
 
-use diesel::dsl::host;
+
 use diesel::prelude::*;
 use rocket::{get, launch, post, routes};
-use rocket::fs::{FileServer, Options, relative};
 use rocket::response::status::Created;
 use crate::lnd::connect;
 use crate::schema::users::dsl::*;
 use rocket::serde::json::Json;
+use crate::invoices::invoice_look_up;
+use crate::schema::user_transactions;
+use crate::schema::user_transactions::user_id;
+use rocket::http::Header;
+use rocket::{Request, Response};
+use rocket::fairing::{Fairing, Info, Kind};
 
 use self::models::*;
 
@@ -17,18 +21,46 @@ mod database;
 mod schema;
 mod models;
 
+mod invoices;
+
+mod lnd;
 // use crate::schema::users;
 // use serde::{Serialize, Deserialize};
 // use rocket::serde::json::Json;
 // use rocket::contrib::json::Json;
 
 
+pub struct CORS;
+
+pub struct Cors;
+
+#[rocket::async_trait]
+impl Fairing for Cors {
+    fn info(&self) -> Info {
+        Info {
+            name: "Cross-Origin-Resource-Sharing Fairing",
+            kind: Kind::Response,
+        }
+    }
+
+    async fn on_response<'r>(&self, _request: &'r Request<'_>, response: &mut Response<'r>) {
+        response.set_header(Header::new("Access-Control-Allow-Origin", "*"));
+        response.set_header(Header::new(
+            "Access-Control-Allow-Methods",
+            "POST, PATCH, PUT, DELETE, HEAD, OPTIONS, GET",
+        ));
+        response.set_header(Header::new("Access-Control-Allow-Headers", "*"));
+        response.set_header(Header::new("Access-Control-Allow-Credentials", "true"));
+    }
+}
+
 #[launch]
 fn rocket() -> _ {
     rocket::build()
         // serve content from disk
-        .mount("/public", FileServer::new(relative!("/public"), Options::Missing | Options::NormalizeDirs))
+        //.mount("/public", FileServer::new(relative!("/public"), Options::Missing | Options::NormalizeDirs))
         // register routes
+        .attach(Cors)
         .mount("/", routes![register,login,generate_invoice])
 }
 
@@ -88,12 +120,6 @@ pub fn login(login_details: Json<LoginRequest>)->Json<UserResponse>{
         .first(connection);
     match user_result {
         Ok(user) => {
-            // let id: i32 = user.id;
-            // let email: String = user.email;
-            // let slug: String = user.slug;
-            // let balance: String = user.balance;
-
-            //
 
             let user_response =UserResponse{
                 name:user.name,
@@ -123,6 +149,7 @@ pub fn login(login_details: Json<LoginRequest>)->Json<UserResponse>{
 #[post("/generate-invoice/<req_slug>",format = "json", data = "<payment_details>")]
 pub async fn generate_invoice(req_slug:String, payment_details: Json<PaymentDetails>) ->Json<InvoiceDetails> {
     use crate::schema::users;
+    use crate::schema::user_transactions;
     let connection = &mut database::establish_connection();
     let user_result = users::table
         .filter(users::slug.eq(req_slug))
@@ -131,14 +158,23 @@ pub async fn generate_invoice(req_slug:String, payment_details: Json<PaymentDeta
     match user_result {
         Ok(user) => {
             //print!("{:?}", user);
-            let payment_request = lnd::connect(payment_details.amount_in_satoshi).await;
-
+            let invoice_response = lnd::connect(payment_details.amount_in_satoshi).await;
+            let payment_addr_string=invoice_response.payment_addr.iter().map(|&c| c as char).collect::<String>();
             //save the payment request and the amount in a user transactions table
             //payment_request,amount and status,user_id,slug
+            println!("{}", payment_addr_string);
             let invoice_details = InvoiceDetails {
                 amount_in_satoshi: payment_details.amount_in_satoshi,
-                payment_request
+                payment_request:invoice_response.payment_request,
+                payment_addr:payment_addr_string,
+                user_id:user.id,
+                status:0
             };
+            diesel::insert_into(user_transactions::table)
+                .values(&invoice_details)
+                .execute(connection)
+                .expect("Error saving new user");
+
             Json(invoice_details)
 
 
@@ -146,25 +182,48 @@ pub async fn generate_invoice(req_slug:String, payment_details: Json<PaymentDeta
         }
 
         _ => {
-            let res = InvoiceDetails { payment_request: "".parse().unwrap(), amount_in_satoshi: 0 };
+            let res = InvoiceDetails { payment_request: "".parse().unwrap(), amount_in_satoshi: 0,payment_addr:"".to_string(),user_id:0,status:0 };
             Json(res)
         }
     }
 }
 
+#[get("/refresh/<incoming_user_id>")]
+pub async fn refresh_invoices(incoming_user_id:i32){
+    use self::schema::user_transactions::dsl::*;
+    use crate::schema::user_transactions;
+    use crate::schema::users;
+    let connection = &mut database::establish_connection();
+    let user = users::table
+        .find(&incoming_user_id)
+        .select(LoggedInUser::as_select())
+        .first(connection);
 
 
-// #[get("/users")]
-// async fn get_all_users() -> Result<Json<Vec<UserDTO>>, String> {
-//   use crate::schema::users::dsl::*;
-//
-//   let connection: PgConnection = database::establish_connection();
-//
-//   match users.load::<UserDTO>(&mut connection) {
-//     Ok(all_users) => Ok(Json(all_users)),
-//     Err(err) => Err(format!("Error fetching users: {}", err)),
-//   }
-// }
+    // let all_user_transactions = user_transactions::table
+    //    // .filter(user_transactions::user_id.eq(&incoming_user_id))
+    //     .filter(status.eq(1))
+    //     .select(UserTransaction::as_select())
+    //     .load(connection);
+    // let  invoice_status=0;
+    // let results = user_transactions
+    //     .filter(user_id.eq(incoming_user_id))
+    //     .filter(status.eq(invoice_status))
+    //     .load::<UserTransaction>(connection);
+
+
+
+    // for transaction in all_user_transactions {
+    //     let invoice_lookup =invoices::invoice_look_up(transaction.payment_addr).await;
+    //
+    //     diesel::update(user_transactions.find(transaction.id))
+    //         .set(status.eq(invoice_lookup.status))
+    //         .returning(InvoiceDetails::as_returning())
+    //         .get_result(connection)
+    //         .unwrap();
+    // }
+}
+
 
 
 

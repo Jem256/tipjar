@@ -51,15 +51,6 @@ fn rocket() -> _ {
         .attach(Cors)
         .mount("/", routes![register,login,generate_invoice])
 }
-
-// #[get("/")]
-// fn index() ->  Vec<User>{
-//     use crate::schema::users;
-//     let connection = &mut establish_connection();
-//     let students = users.load::<User>(connection)
-//     .expect("Error loading students");
-//     Json(students)
-// }
 /*
 * This function will register our user
  */
@@ -147,10 +138,15 @@ pub async fn generate_invoice(req_slug:String, payment_details: Json<PaymentDeta
         Ok(user) => {
             //print!("{:?}", user);
             let invoice_response = lnd::connect(payment_details.amount_in_satoshi).await;
-            let payment_addr_string=invoice_response.payment_addr.iter().map(|&c| c as char).collect::<String>();
+            //println!("{:?}", invoice_response.payment_addr);
+            let payment_addr_string=base64::encode(invoice_response.payment_addr);
+
+            //let payment_add=base64::decode(payment_addr_string.clone()).unwrap();
+
+            //println!("{:?}", payment_add);
             //save the payment request and the amount in a user transactions table
             //payment_request,amount and status,user_id,slug
-            println!("{}", payment_addr_string);
+
             let invoice_details = InvoiceDetails {
                 amount_in_satoshi: payment_details.amount_in_satoshi,
                 payment_request:invoice_response.payment_request,
@@ -161,11 +157,8 @@ pub async fn generate_invoice(req_slug:String, payment_details: Json<PaymentDeta
             diesel::insert_into(user_transactions::table)
                 .values(&invoice_details)
                 .execute(connection)
-                .expect("Error saving new user");
-
+                .expect("Error saving invoice");
             Json(invoice_details)
-
-
             // Now you can use id, email, slug, and balance variables
         }
 

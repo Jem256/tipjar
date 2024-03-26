@@ -1,3 +1,4 @@
+'use client';
 import React, { useState } from 'react';
 import { FaLock } from 'react-icons/fa';
 import { logIn } from '../services/api';

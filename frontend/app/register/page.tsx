@@ -1,3 +1,4 @@
+'use client';
 import React, { useState } from 'react';
 import { signUp } from '../services/api';
 
@@ -6,7 +7,7 @@ const SignUp: React.FC = () => {
         name: '',
         email: '',
         password: '',
-        confirmPassword: '',
+        // confirmPassword: '',
     });
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -81,7 +82,7 @@ const SignUp: React.FC = () => {
                                 onChange={handleInputChange}
                             />
                         </div>
-                        <div>
+                        {/* <div>
                             <label
                                 htmlFor='confirmPassword'
                                 className='sr-only'
@@ -98,7 +99,7 @@ const SignUp: React.FC = () => {
                                 placeholder='Confirm Password'
                                 onChange={handleInputChange}
                             />
-                        </div>
+                        </div> */}
                     </div>
 
                     <div>

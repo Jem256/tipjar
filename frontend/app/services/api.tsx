@@ -1,11 +1,11 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'https://example.com/api'; // Replace this with your API base URL
+const API_BASE_URL = 'http://127.0.0.1:8000';
 
 export const signUp = async (userData: any) => {
     try {
-        const response = await axios.post(`${API_BASE_URL}/signup`, userData);
-        return response.data;
+        const response = await axios.post(`${API_BASE_URL}/register`, userData);
+        return response;
     } catch (error) {
         throw error;
     }

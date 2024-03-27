@@ -2,13 +2,14 @@
 use tonic_lnd;
 use tonic_lnd::invoicesrpc::lookup_invoice_msg::InvoiceRef;
 use tonic_lnd::invoicesrpc::LookupInvoiceMsg;
+#[derive(Debug)]
 pub struct InvoiceStatus{
 
     pub status:i32,
 }
-pub async  fn invoice_look_up(payment_addr: String)-> InvoiceStatus{
+pub async  fn invoice_look_up(payment_addr: Vec<u8>)-> InvoiceStatus{
 
-    let payment_address= payment_addr.as_bytes().to_vec();
+    //let payment_address= payment_addr.as_bytes().to_vec();
     let address="https://127.0.0.1:10001";
     //let cert_file_path ="/Users/jose/.polar/networks/1/volumes/lnd/alice/tls.cert";
 
@@ -24,7 +25,7 @@ pub async  fn invoice_look_up(payment_addr: String)-> InvoiceStatus{
         .expect("failed to connect");
 
     let invoice_lookup=client.invoices()
-        .lookup_invoice_v2(LookupInvoiceMsg{ lookup_modifier: 1, invoice_ref: Option::from(InvoiceRef::PaymentAddr(payment_address)) })
+        .lookup_invoice_v2(LookupInvoiceMsg{ lookup_modifier: 1, invoice_ref: Option::from(InvoiceRef::PaymentAddr(payment_addr)) })
         .await.expect("failed to get info");
 
     let invoice_state =InvoiceStatus{status:invoice_lookup.into_inner().state};

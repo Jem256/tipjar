@@ -55,7 +55,7 @@ fn rocket() -> _ {
         //.mount("/public", FileServer::new(relative!("/public"), Options::Missing | Options::NormalizeDirs))
         // register routes
         .attach(Cors)
-        .mount("/", routes![register,login,generate_invoice,refresh_invoice])
+        .mount("/", routes![register,login,generate_invoice,fetch_user])
 }
 
 /*
@@ -175,7 +175,7 @@ pub async fn generate_invoice(req_slug:String, payment_details: Json<PaymentDeta
     }
 }
 
-#[get("/refresh/<incoming_user_id>")]
+
 pub async fn refresh_invoice(incoming_user_id:i32){
     use self::schema::user_transactions::dsl::*;
     use crate::schema::users;
@@ -223,9 +223,33 @@ pub async fn refresh_invoice(incoming_user_id:i32){
             eprintln!("Error loading user transactions: {:?}", err);
         }
     }
+}
+#[get("/fetch-user/<request_id>")]
+pub async fn fetch_user(request_id: i32) ->Json<UserResponse>{
+    refresh_invoice(request_id.clone()).await;
+    let connection = &mut database::establish_connection();
 
+    let user_res = crate::schema::users::table
+        .find(request_id)
+        .select(LoggedInUser::as_select())
+        .first(connection);
 
-
+    match user_res {
+        Ok(user) => {
+            let user_response =UserResponse{
+                name:user.name,
+                email:user.email,
+                slug:user.slug,
+                balance:user.balance
+            };
+            Json(user_response)
+            // Now you can use id, email, slug, and balance variables
+        }
+        _ => {
+            let res=UserResponse{name:"".parse().unwrap(),email:"".parse().unwrap(),slug:"".parse().unwrap(), balance:"".parse().unwrap() };
+            Json(res)
+        }
+    }
 }
 
 

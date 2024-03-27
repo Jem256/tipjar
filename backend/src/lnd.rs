@@ -10,11 +10,11 @@ use crate::models::InvoiceDetails;
 pub async  fn connect(amount: i32)-> String{
 
 
-    let address="https://127.0.0.1:10001";
+    let address="https://127.0.0.1:10004";
     //let cert_file_path ="/Users/jose/.polar/networks/1/volumes/lnd/alice/tls.cert";
 
-    let cert_file_path="/Users/jose/.polar/networks/2/volumes/lnd/alice/tls.cert";
-    let macaroon_file_path="/Users/jose/.polar/networks/2/volumes/lnd/alice/data/chain/bitcoin/regtest/admin.macaroon";
+    let cert_file_path="/home/nagasha/.polar/networks/4/volumes/lnd/alice/tls.cert";
+    let macaroon_file_path="/home/nagasha/.polar/networks/4/volumes/lnd/alice/data/chain/bitcoin/regtest/admin.macaroon";
 
     let cert_path = cert_file_path.to_string();
     let macaroon_path = macaroon_file_path.to_string();

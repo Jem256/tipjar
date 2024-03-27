@@ -24,3 +24,21 @@ export const logIn = async (userData: any) => {
         throw error;
     }
 };
+
+export const payment = async (userData: any) => {
+    const headers = {
+        'Content-Type': 'application/json',
+    };
+    try {
+        const response = await axios.post(
+            `${API_BASE_URL}/generate_invoice/6c696e646140746573742e636f6d`,
+            userData,
+            {
+                headers,
+            }
+        );
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
+};

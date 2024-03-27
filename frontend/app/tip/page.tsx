@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { RxAvatar } from 'react-icons/rx';
+import { payment } from '../services/api';
 
 const Tipping: React.FC = () => {
     const [tipAmount, setTipAmount] = useState<number>(0);
@@ -10,10 +11,19 @@ const Tipping: React.FC = () => {
         setTipAmount(parseFloat(e.target.value));
     };
 
-    const handlePayment = () => {
-        // Logic for handling the payment
+    const handlePayment = async () => {
         console.log(`Payment of ${tipAmount} dollars processed.`);
-        // You can replace this with actual payment processing logic
+        try {
+            const response = await payment({
+                slug: '6c696e646140746573742e636f6d',
+                amount_in_satoshi: tipAmount,
+            });
+            if (response) {
+                console.log('paymentRes', response);
+            }
+        } catch (error) {
+            console.error(error);
+        }
     };
 
     return (

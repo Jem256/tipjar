@@ -1,4 +1,6 @@
-#[macro_use] extern crate rocket;
+#[macro_use] 
+extern crate rocket;
+extern crate rocket_cors;
 mod lnd;
 
 
@@ -22,14 +24,42 @@ mod models;
 // use rocket::serde::json::Json;
 // use rocket::contrib::json::Json;
 
+use rocket::http::Method;
+
+use rocket_cors::{
+    AllowedOrigins, AllowedHeaders, Cors, CorsOptions
+};
+
+fn make_cors() -> Cors {
+    let allowed_origins = AllowedOrigins::some_exact(&[
+        "http://localhost:3000",
+        "http://127.0.0.1:3000"
+    ]);
+
+    CorsOptions {
+        allowed_origins,
+        allowed_methods: vec![Method::Get, Method::Post].into_iter().map(From::from).collect(), 
+        allowed_headers: AllowedHeaders::some(&[
+            "Authorization",
+            "Accept",
+            "Content-Type", 
+            "Access-Control-Allow-Origin",
+            "Access-Control-Allow-Headers",
+        ]),
+        allow_credentials: true,
+        ..Default::default()
+    }
+    .to_cors()
+    .expect("error while building CORS")
+}
 
 #[launch]
-fn rocket() -> _ {
+fn rocket() -> _ {      
     rocket::build()
         // serve content from disk
         .mount("/public", FileServer::new(relative!("/public"), Options::Missing | Options::NormalizeDirs))
         // register routes
-        .mount("/", routes![register,login,generate_invoice])
+        .mount("/", routes![register,login,generate_invoice]).attach(make_cors())
 }
 
 // #[get("/")]

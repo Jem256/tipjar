@@ -5,9 +5,23 @@ import Image from 'next/image';
 import axios from 'axios';
 import { useSelector } from 'react-redux';
 import { RootState } from '../services/rootReducer';
+import { FaCopy } from 'react-icons/fa';
 
 const Dashboard = () => {
     const user = useSelector((state: RootState) => state.auth.user);
+
+    const userSlug = `http://localhost:3000/${user?.slug}`;
+
+    const handleCopy = () => {
+        navigator.clipboard
+            .writeText(userSlug)
+            .then(() => {
+                console.log('Text copied to clipboard:', userSlug);
+            })
+            .catch((error) => {
+                console.error('Error copying text:', error);
+            });
+    };
 
     return (
         <div className='bg-gray-50 py-4 px-4 sm:px-6 lg:px-8 rounded shadow-lg'>
@@ -56,13 +70,23 @@ const Dashboard = () => {
                         <label htmlFor='shareable-link' className='sr-only'>
                             Sharable Payment Link
                         </label>
-                        <input
-                            type='text'
-                            className='w-full px-3 py-2 mt-1 text-gray-900 rounded-md border border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500'
-                            value={`http://localhost:3000/${user?.slug}`}
-                            placeholder='Sharable Payment Link'
-                            readOnly
-                        />
+
+                        <div className='flex'>
+                            <input
+                                type='text'
+                                className='w-full px-3 py-2 mt-1 text-gray-900 rounded-md border border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500'
+                                value={userSlug}
+                                placeholder='Sharable Payment Link'
+                                readOnly
+                            />
+                            <button
+                                title='Copy Payment Reference'
+                                onClick={handleCopy}
+                                className='flex-shrink-0 px-3 py-2 mt-1 ml-1 text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500'
+                            >
+                                <FaCopy />
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>

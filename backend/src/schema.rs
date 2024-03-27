@@ -1,6 +1,19 @@
 // @generated automatically by Diesel CLI.
 
 diesel::table! {
+    user_transactions (id) {
+        id -> Int4,
+        user_id -> Int4,
+        amount_in_satoshi -> Int4,
+        #[max_length = 2000]
+        payment_request -> Varchar,
+        #[max_length = 255]
+        payment_addr -> Varchar,
+        status -> Int4,
+    }
+}
+
+diesel::table! {
     users (id) {
         id -> Int4,
         #[max_length = 255]
@@ -15,3 +28,8 @@ diesel::table! {
         balance -> Varchar,
     }
 }
+
+diesel::allow_tables_to_appear_in_same_query!(
+    user_transactions,
+    users,
+);

@@ -28,7 +28,7 @@ const Login: React.FC = () => {
             const response = await logIn(formData);
             if (response) {
                 dispatch(login(response));
-                router.push('/dashboard');
+                router.push('/tip');
             }
         } catch (error) {
             console.error(error);

@@ -1,7 +1,8 @@
 import axios from 'axios';
+import { useSelector } from 'react-redux';
+import { RootState } from './rootReducer';
 
 const API_BASE_URL = 'http://127.0.0.1:8000';
-
 export const signUp = async (userData: any) => {
     try {
         const response = await axios.post(`${API_BASE_URL}/register`, userData);
@@ -25,13 +26,16 @@ export const logIn = async (userData: any) => {
     }
 };
 
-export const payment = async (userData: any) => {
+export const payment = async (
+    userData: any,
+    user: RootState['auth']['user']
+) => {
     const headers = {
         'Content-Type': 'application/json',
     };
     try {
         const response = await axios.post(
-            `${API_BASE_URL}/generate_invoice/6c696e646140746573742e636f6d`,
+            `${API_BASE_URL}/generate-invoice/${user?.slug}`,
             userData,
             {
                 headers,

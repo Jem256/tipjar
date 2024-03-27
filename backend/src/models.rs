@@ -57,10 +57,23 @@ pub struct PaymentDetails{
     pub amount_in_satoshi:i32,
 
 }
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq,Insertable,Selectable)]
+#[diesel(table_name = crate::schema::user_transactions)]
 pub struct InvoiceDetails{
     pub payment_request:String,
-    pub amount_in_satoshi:i32
+    pub amount_in_satoshi:i32,
+    pub payment_addr:String,
+    pub user_id:i32,
+    pub status:i32
+}
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq,Queryable,Selectable)]
+#[diesel(table_name = crate::schema::user_transactions)]
+pub struct UserTransaction{
+    pub id:i32,
+    pub user_id:i32,
+    pub amount_in_satoshi:i32,
+    pub payment_addr:String,
+    pub status:i32
 }
 
 #[derive(Debug, Serialize, Deserialize)]

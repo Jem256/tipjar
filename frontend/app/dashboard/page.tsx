@@ -3,14 +3,23 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import axios from 'axios';
-import { useSelector } from 'react-redux';
-import { RootState } from '../services/rootReducer';
 import { FaCopy } from 'react-icons/fa';
 
 const Dashboard = () => {
-    const user = useSelector((state: RootState) => state.auth.user);
+    const [userData, setUserData] = useState<any>({});
 
-    const userSlug = `http://localhost:3000/${user?.slug}`;
+    const userSlug = `http://localhost:3000/tip/${userData?.slug}`;
+    useEffect(() => {
+        // Fetch user data from API endpoint
+        axios
+            .get('http://127.0.0.1:8000/fetch-user/6')
+            .then((response) => {
+                setUserData(response.data);
+            })
+            .catch((error) => {
+                console.error('Error fetching user data:', error);
+            });
+    }, []);
 
     const handleCopy = () => {
         navigator.clipboard
@@ -50,8 +59,10 @@ const Dashboard = () => {
                     <div className='flex flex-col items-center'>
                         <h3 className='text-lg font-semibold'>User Profile</h3>
                         {/* Display user profile information */}
-                        <p className='text-gray-600'>Name: {user?.name}</p>
-                        <p className='text-gray-600'>Email: {user?.email}</p>
+                        <p className='text-gray-600'>Name: {userData?.name}</p>
+                        <p className='text-gray-600'>
+                            Email: {userData?.email}
+                        </p>
                     </div>
 
                     <div className='flex flex-col items-center'>
@@ -59,7 +70,7 @@ const Dashboard = () => {
                             Account Balance
                         </h3>
                         {/* Display user account balance */}
-                        <p className='text-gray-600'>{user?.balance}</p>
+                        <p className='text-gray-600'>{userData?.balance}</p>
                     </div>
 
                     <div className='flex flex-col items-center'>

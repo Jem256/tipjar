@@ -9,7 +9,7 @@ pub struct User {
     pub email: String,
     pub slug: String,
     pub password:String,
-    pub balance: f64,
+    pub balance: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize,Queryable, Selectable)]

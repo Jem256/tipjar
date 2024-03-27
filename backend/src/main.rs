@@ -60,7 +60,7 @@ fn rocket() -> _ {
         // serve content from disk
         //.mount("/public", FileServer::new(relative!("/public"), Options::Missing | Options::NormalizeDirs))
         // register routes
-        .mount("/", routes![register,login,generate_invoice,refresh_invoice]).attach(make_cors())
+        .mount("/", routes![register,login,generate_invoice,fetch_user]).attach(make_cors())
 }
 
 /*
@@ -98,7 +98,7 @@ fn rocket() -> _ {
 * will return logged user with the user details, email,balance, unique url
  */
 #[post("/login",format = "json", data = "<login_details>")]
-pub fn login(login_details: Json<LoginRequest>)->Json<UserResponse>{
+pub async fn login(login_details: Json<LoginRequest>) ->Json<UserResponse>{
     use crate::schema::users;
     let connection = &mut database::establish_connection();
     let sent_email= login_details.email.clone();
@@ -111,7 +111,6 @@ pub fn login(login_details: Json<LoginRequest>)->Json<UserResponse>{
         .first(connection);
     match user_result {
         Ok(user) => {
-
             let user_response =UserResponse{
                 name:user.name,
                 email:user.email,
@@ -181,17 +180,15 @@ pub async fn generate_invoice(req_slug:String, payment_details: Json<PaymentDeta
     }
 }
 
-#[get("/refresh/<incoming_user_id>")]
+
 pub async fn refresh_invoice(incoming_user_id:i32){
     use self::schema::user_transactions::dsl::*;
-    use crate::schema::user_transactions;
     use crate::schema::users;
     let connection = &mut database::establish_connection();
-    // let user = users::table
-    //     .find(&incoming_user_id)
-    //     .select(LoggedInUser::as_select())
-    //     .first(connection);
-   // user_transactions.load::<UserTransaction>(connection).map(Json).expect("Error loading birds");
+    let user = users::table
+        .find(&incoming_user_id)
+        .select(LoggedInUser::as_select())
+        .first(connection);
 
     let all_user_transactions = user_transactions
         .filter(user_id.eq(incoming_user_id))
@@ -199,7 +196,7 @@ pub async fn refresh_invoice(incoming_user_id:i32){
         .select(UserTransaction::as_select())
         .load(connection);
     //println!("{:?}", all_user_transactions);
-    //let user_balance  = 0;
+    let mut new_balance  = 0;
     match all_user_transactions {
         Ok(transactions) => {
             for transaction in transactions {
@@ -207,7 +204,7 @@ pub async fn refresh_invoice(incoming_user_id:i32){
                 let payment_add=base64::decode(transaction.payment_addr).unwrap();
                 let invoice_lookup =invoices::invoice_look_up(payment_add).await;
                if invoice_lookup.status > 0 {
-                   //balance + transaction.amount
+                   new_balance += transaction.amount_in_satoshi;
                    diesel::update(user_transactions.find(transaction.id))
                        .set(status.eq(invoice_lookup.status))
                        .returning(UserTransaction::as_returning())
@@ -216,24 +213,48 @@ pub async fn refresh_invoice(incoming_user_id:i32){
 
 
             }
+            let user_balance= &user.unwrap().balance;
+            let usr_bal=user_balance.parse::<i32>().unwrap();
+            let total_balance =usr_bal + new_balance;
+
+            diesel::update(users.find(incoming_user_id))
+                .set(balance.eq(total_balance.to_string()))
+                .returning(LoggedInUser::as_returning())
+                .get_result(connection).expect("balance update failed");
+
+
         }
         Err(err) => {
             eprintln!("Error loading user transactions: {:?}", err);
         }
     }
+}
+#[get("/fetch-user/<request_id>")]
+pub async fn fetch_user(request_id: i32) ->Json<UserResponse>{
+    refresh_invoice(request_id.clone()).await;
+    let connection = &mut database::establish_connection();
 
+    let user_res = crate::schema::users::table
+        .find(request_id)
+        .select(LoggedInUser::as_select())
+        .first(connection);
 
-    //for transaction in all_user_transactions {
-        //println!("{:?}", transaction)
-        // let payment_add=base64::decode(transaction.payment_addr);
-        // let invoice_lookup =invoices::invoice_look_up(payment_add).await;
-        //
-        // diesel::update(user_transactions.find(transaction.id))
-        //     .set(status.eq(invoice_lookup.status))
-        //     .returning(InvoiceDetails::as_returning())
-        //     .get_result(connection)
-        //     .unwrap();
-    //}
+    match user_res {
+        Ok(user) => {
+            let user_response =UserResponse{
+                name:user.name,
+                email:user.email,
+                slug:user.slug,
+                balance:user.balance
+            };
+            Json(user_response)
+            // Now you can use id, email, slug, and balance variables
+        }
+        _ => {
+            let res=UserResponse{name:"".parse().unwrap(),email:"".parse().unwrap(),slug:"".parse().unwrap(), balance:"".parse().unwrap() };
+            Json(res)
+        }
+    }
 }
 
 

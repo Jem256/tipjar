@@ -1,22 +1,14 @@
-use rocket::futures::task::Spawn;
-use rocket::serde::json::Json;
-use tonic_lnd;
-use sha2::{Sha256, Digest};
-use tonic_lnd::invoicesrpc::lookup_invoice_msg::InvoiceRef;
-use tonic_lnd::invoicesrpc::lookup_invoice_msg::InvoiceRef::PaymentAddr;
-use tonic_lnd::invoicesrpc::LookupInvoiceMsg;
-use tonic_lnd::lnrpc::{Amount, Invoice};
-use tonic_lnd::lnrpc::invoice::InvoiceState;
-use crate::models::InvoiceDetails;
-use crate::schema::user_transactions::status;
 
+use tonic_lnd;
+use tonic_lnd::invoicesrpc::lookup_invoice_msg::InvoiceRef;
+use tonic_lnd::invoicesrpc::LookupInvoiceMsg;
 pub struct InvoiceStatus{
 
-    status:i32,
+    pub status:i32,
 }
-pub async  fn invoice_look_up(payment_addr: Vec<u8>)-> InvoiceStatus{
+pub async  fn invoice_look_up(payment_addr: String)-> InvoiceStatus{
 
-
+    let payment_address= payment_addr.as_bytes().to_vec();
     let address="https://127.0.0.1:10001";
     //let cert_file_path ="/Users/jose/.polar/networks/1/volumes/lnd/alice/tls.cert";
 
@@ -32,12 +24,11 @@ pub async  fn invoice_look_up(payment_addr: Vec<u8>)-> InvoiceStatus{
         .expect("failed to connect");
 
     let invoice_lookup=client.invoices()
-        .lookup_invoice_v2(LookupInvoiceMsg{ lookup_modifier: 1, invoice_ref: Option::from(InvoiceRef::PaymentAddr(payment_addr)) })
+        .lookup_invoice_v2(LookupInvoiceMsg{ lookup_modifier: 1, invoice_ref: Option::from(InvoiceRef::PaymentAddr(payment_address)) })
         .await.expect("failed to get info");
 
     let invoice_state =InvoiceStatus{status:invoice_lookup.into_inner().state};
     invoice_state
-
 
 }
 

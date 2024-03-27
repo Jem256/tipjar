@@ -1,13 +1,15 @@
 use rand::distributions::{Alphanumeric, DistString};
-use rocket::serde::json::Json;
 use tonic_lnd;
 use sha2::{Sha256, Digest};
-use tonic_lnd::lnrpc::{Amount, Invoice};
-use crate::models::InvoiceDetails;
 
 
+pub struct InvoiceResponse{
 
-pub async  fn connect(amount: i32)-> String{
+    pub payment_addr:Vec<u8>,
+    pub payment_request:String
+}
+
+pub async  fn connect(amount: i32)-> InvoiceResponse{
 
 
     let address="https://127.0.0.1:10001";
@@ -37,7 +39,7 @@ pub async  fn connect(amount: i32)-> String{
     //println!("{:?}", payment_hash);
     // Compute the SHA-256 hash of the payment description
 
-    let mut invoice = client.lightning().add_invoice(tonic_lnd::lnrpc::Invoice{
+    let  invoice= client.lightning().add_invoice(tonic_lnd::lnrpc::Invoice{
         memo:"sass".to_string(),
         r_preimage: Vec::from(hex_preimage),
         r_hash: vec![],
@@ -66,10 +68,15 @@ pub async  fn connect(amount: i32)-> String{
         is_amp: false,
         amp_invoice_state: Default::default(),
     }).await.expect("failed to get info");
-    let  payment_request = invoice.into_inner().payment_request;
+    let invoice_inner =invoice.into_inner();
+   let invoice_response= InvoiceResponse{
+        payment_addr:invoice_inner.payment_addr.clone(),
+        payment_request:invoice_inner.payment_request.clone()
+    };
 
-    payment_request
+    invoice_response
 
- }
+
+}
 
 

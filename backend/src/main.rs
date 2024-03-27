@@ -29,7 +29,7 @@ fn rocket() -> _ {
         // serve content from disk
         .mount("/public", FileServer::new(relative!("/public"), Options::Missing | Options::NormalizeDirs))
         // register routes
-        .mount("/", routes![register,login,generate_invoice])
+        .mount("/", routes![register,login])
 }
 
 // #[get("/")]
@@ -115,42 +115,42 @@ pub fn login(login_details: Json<LoginRequest>)->Json<UserResponse>{
 
 }
 
-/*
-* This function create an endpoint when then userendpoint is visited
-* Function will return and
+// /*
+// * This function create an endpoint when then userendpoint is visited
+// * Function will return and
 
- */
-#[post("/generate-invoice/<req_slug>",format = "json", data = "<payment_details>")]
-pub async fn generate_invoice(req_slug:String, payment_details: Json<PaymentDetails>) ->Json<InvoiceDetails> {
-    use crate::schema::users;
-    let connection = &mut database::establish_connection();
-    let user_result = users::table
-        .filter(users::slug.eq(req_slug))
-        .select(LoggedInUser::as_select())
-        .first(connection);
-    match user_result {
-        Ok(user) => {
-            //print!("{:?}", user);
-            let payment_request = lnd::connect(payment_details.amount_in_satoshi).await;
+//  */
+// #[post("/generate-invoice/<req_slug>",format = "json", data = "<payment_details>")]
+// pub async fn generate_invoice(req_slug:String, payment_details: Json<PaymentDetails>) ->Json<InvoiceDetails> {
+//     use crate::schema::users;
+//     let connection = &mut database::establish_connection();
+//     let user_result = users::table
+//         .filter(users::slug.eq(req_slug))
+//         .select(LoggedInUser::as_select())
+//         .first(connection);
+//     match user_result {
+//         Ok(user) => {
+//             //print!("{:?}", user);
+//             // let payment_request = lnd::connect(payment_details.amount_in_satoshi).await;
 
-            //save the payment request and the amount in a user transactions table
-            //payment_request,amount and status,user_id,slug
-            let invoice_details = InvoiceDetails {
-                amount_in_satoshi: payment_details.amount_in_satoshi,
-                payment_request
-            };
-            Json(invoice_details)
+//             //save the payment request and the amount in a user transactions table
+//             //payment_request,amount and status,user_id,slug
+//             // let invoice_details = InvoiceDetails {
+//             //     amount_in_satoshi: payment_details.amount_in_satoshi,
+//                 // payment_request
+//             };
+//             Json(invoice_details)
 
 
-            // Now you can use id, email, slug, and balance variables
-        }
+//             // Now you can use id, email, slug, and balance variables
+//         }
 
-        _ => {
-            let res = InvoiceDetails { payment_request: "".parse().unwrap(), amount_in_satoshi: 0 };
-            Json(res)
-        }
-    }
-}
+//         _ => {
+//             let res = InvoiceDetails { payment_request: "".parse().unwrap(), amount_in_satoshi: 0 };
+//             Json(res)
+//         }
+//     }
+// }
 
 
 

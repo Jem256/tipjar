@@ -1,5 +1,7 @@
-#[macro_use]
+#[macro_use] 
 extern crate rocket;
+extern crate rocket_cors;
+mod lnd;
 
 use diesel::prelude::*;
 use rocket::{get, launch, post, routes};
@@ -20,42 +22,45 @@ mod schema;
 mod models;
 
 mod invoices;
-
-mod lnd;
-
-pub struct Cors;
 pub struct Cron;
 
 
-#[rocket::async_trait]
-impl Fairing for Cors {
-    fn info(&self) -> Info {
-        Info {
-            name: "Cross-Origin-Resource-Sharing Fairing",
-            kind: Kind::Response,
-        }
-    }
+use rocket::http::Method;
 
-    async fn on_response<'r>(&self, _request: &'r Request<'_>, response: &mut Response<'r>) {
-        response.set_header(Header::new("Access-Control-Allow-Origin", "*"));
-        response.set_header(Header::new(
-            "Access-Control-Allow-Methods",
-            "POST, PATCH, PUT, DELETE, HEAD, OPTIONS, GET",
-        ));
-        response.set_header(Header::new("Access-Control-Allow-Headers", "*"));
-        response.set_header(Header::new("Access-Control-Allow-Credentials", "true"));
+use rocket_cors::{
+    AllowedOrigins, AllowedHeaders, Cors, CorsOptions
+};
+
+fn make_cors() -> Cors {
+    let allowed_origins = AllowedOrigins::some_exact(&[
+        "http://localhost:3000",
+        "http://127.0.0.1:3000"
+    ]);
+
+    CorsOptions {
+        allowed_origins,
+        allowed_methods: vec![Method::Get, Method::Post].into_iter().map(From::from).collect(), 
+        allowed_headers: AllowedHeaders::some(&[
+            "Authorization",
+            "Accept",
+            "Content-Type", 
+            "Access-Control-Allow-Origin",
+            "Access-Control-Allow-Headers",
+        ]),
+        allow_credentials: true,
+        ..Default::default()
     }
+    .to_cors()
+    .expect("error while building CORS")
 }
 
-
 #[launch]
-fn rocket() -> _ {
+fn rocket() -> _ {      
     rocket::build()
         // serve content from disk
         //.mount("/public", FileServer::new(relative!("/public"), Options::Missing | Options::NormalizeDirs))
         // register routes
-        .attach(Cors)
-        .mount("/", routes![register,login,generate_invoice,fetch_user])
+        .mount("/", routes![register,login,generate_invoice,fetch_user]).attach(make_cors())
 }
 
 /*

@@ -1,8 +1,14 @@
 'use client';
 import React, { useState } from 'react';
 import { signUp } from '../services/api';
+import { useDispatch } from 'react-redux';
+import { register } from '../services/actions';
+import { useRouter } from 'next/navigation';
 
 const SignUp: React.FC = () => {
+    const dispatch = useDispatch();
+    const router = useRouter();
+
     const [formData, setFormData] = useState({
         name: '',
         email: '',
@@ -21,7 +27,10 @@ const SignUp: React.FC = () => {
         e.preventDefault();
         try {
             const response = await signUp(formData);
-            console.log(response); // Handle successful signup
+            if (response) {
+                dispatch(register());
+                router.push('/login');
+            }
         } catch (error) {
             console.error(error); // Handle signup error
         }

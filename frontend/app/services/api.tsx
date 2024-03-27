@@ -12,8 +12,13 @@ export const signUp = async (userData: any) => {
 };
 
 export const logIn = async (userData: any) => {
+    const headers = {
+        'Content-Type': 'application/json',
+    };
     try {
-        const response = await axios.post(`${API_BASE_URL}/login`, userData);
+        const response = await axios.post(`${API_BASE_URL}/login`, userData, {
+            headers,
+        });
         return response.data;
     } catch (error) {
         throw error;

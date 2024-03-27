@@ -7,7 +7,7 @@ diesel::table! {
         amount_in_satoshi -> Int4,
         #[max_length = 2000]
         payment_request -> Varchar,
-        #[max_length = 2000]
+        #[max_length = 255]
         payment_addr -> Varchar,
         status -> Int4,
     }

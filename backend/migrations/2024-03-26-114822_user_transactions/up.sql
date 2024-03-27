@@ -3,6 +3,6 @@ CREATE TABLE user_transactions (
                        user_id INTEGER NOT NULL,
                        amount_in_satoshi INTEGER NOT NULL,
                        payment_request VARCHAR(2000) NOT NULL,
-                       payment_addr VARCHAR(2000) NOT NULL,
+                       payment_addr VARCHAR(255) NOT NULL,
                        status INTEGER NOT NULL
 );-- Your SQL goes here

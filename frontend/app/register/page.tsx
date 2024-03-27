@@ -32,7 +32,7 @@ const SignUp: React.FC = () => {
                 router.push('/login');
             }
         } catch (error) {
-            console.error(error); // Handle signup error
+            console.error(error); 
         }
     };
     return (

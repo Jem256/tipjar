@@ -2,19 +2,20 @@
 use tonic_lnd;
 use tonic_lnd::invoicesrpc::lookup_invoice_msg::InvoiceRef;
 use tonic_lnd::invoicesrpc::LookupInvoiceMsg;
+use std::env;
+use dotenvy::dotenv;
 #[derive(Debug)]
 pub struct InvoiceStatus{
 
     pub status:i32,
 }
 pub async  fn invoice_look_up(payment_addr: Vec<u8>)-> InvoiceStatus{
+    dotenv().ok();
 
     //let payment_address= payment_addr.as_bytes().to_vec();
-    let address="https://127.0.0.1:10001";
-    //let cert_file_path ="/Users/jose/.polar/networks/1/volumes/lnd/alice/tls.cert";
-
-    let cert_file_path="/Users/jose/.polar/networks/2/volumes/lnd/alice/tls.cert";
-    let macaroon_file_path="/Users/jose/.polar/networks/2/volumes/lnd/alice/data/chain/bitcoin/regtest/admin.macaroon";
+    let address= env::var("ADDRESS").expect("ADDRESS must be set");
+    let cert_file_path= env::var("CERT_FILE_PATH").expect("CERT_FILE_PATH must be set");
+    let macaroon_file_path= env::var("MACAROON_FILE_PATH").expect("MACAROON_FILE_PATH must be set");
 
     let cert_path = cert_file_path.to_string();
     let macaroon_path = macaroon_file_path.to_string();

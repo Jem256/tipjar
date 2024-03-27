@@ -12,6 +12,9 @@ use rocket::fairing::{Fairing, Info, Kind};
 
 use self::models::*;
 
+extern crate cron_job;
+use cron_job::CronJob;
+
 mod database;
 mod schema;
 mod models;
@@ -21,6 +24,8 @@ mod invoices;
 mod lnd;
 
 pub struct Cors;
+pub struct Cron;
+
 
 #[rocket::async_trait]
 impl Fairing for Cors {
@@ -42,6 +47,7 @@ impl Fairing for Cors {
     }
 }
 
+
 #[launch]
 fn rocket() -> _ {
     rocket::build()
@@ -49,8 +55,9 @@ fn rocket() -> _ {
         //.mount("/public", FileServer::new(relative!("/public"), Options::Missing | Options::NormalizeDirs))
         // register routes
         .attach(Cors)
-        .mount("/", routes![register,login,generate_invoice])
+        .mount("/", routes![register,login,generate_invoice,refresh_invoice])
 }
+
 /*
 * This function will register our user
  */
@@ -170,39 +177,58 @@ pub async fn generate_invoice(req_slug:String, payment_details: Json<PaymentDeta
 }
 
 #[get("/refresh/<incoming_user_id>")]
-pub async fn refresh_invoices(incoming_user_id:i32){
-    //use self::schema::user_transactions::dsl::*;
-    //use crate::schema::user_transactions;
+pub async fn refresh_invoice(incoming_user_id:i32){
+    use self::schema::user_transactions::dsl::*;
+    use crate::schema::user_transactions;
     use crate::schema::users;
     let connection = &mut database::establish_connection();
-    let user = users::table
-        .find(&incoming_user_id)
-        .select(LoggedInUser::as_select())
-        .first(connection);
+    // let user = users::table
+    //     .find(&incoming_user_id)
+    //     .select(LoggedInUser::as_select())
+    //     .first(connection);
+   // user_transactions.load::<UserTransaction>(connection).map(Json).expect("Error loading birds");
+
+    let all_user_transactions = user_transactions
+        .filter(user_id.eq(incoming_user_id))
+        .filter(status.eq(0))
+        .select(UserTransaction::as_select())
+        .load(connection);
+    //println!("{:?}", all_user_transactions);
+    //let user_balance  = 0;
+    match all_user_transactions {
+        Ok(transactions) => {
+            for transaction in transactions {
+                // Do something with each transaction here
+                let payment_add=base64::decode(transaction.payment_addr).unwrap();
+                let invoice_lookup =invoices::invoice_look_up(payment_add).await;
+               if invoice_lookup.status > 0 {
+                   //balance + transaction.amount
+                   diesel::update(user_transactions.find(transaction.id))
+                       .set(status.eq(invoice_lookup.status))
+                       .returning(UserTransaction::as_returning())
+                       .get_result(connection).expect("Update failed");
+               }
 
 
-    // let all_user_transactions = user_transactions::table
-    //    // .filter(user_transactions::user_id.eq(&incoming_user_id))
-    //     .filter(status.eq(1))
-    //     .select(UserTransaction::as_select())
-    //     .load(connection);
-    // let  invoice_status=0;
-    // let results = user_transactions
-    //     .filter(user_id.eq(incoming_user_id))
-    //     .filter(status.eq(invoice_status))
-    //     .load::<UserTransaction>(connection);
+            }
+        }
+        Err(err) => {
+            eprintln!("Error loading user transactions: {:?}", err);
+        }
+    }
 
 
-
-    // for transaction in all_user_transactions {
-    //     let invoice_lookup =invoices::invoice_look_up(transaction.payment_addr).await;
-    //
-    //     diesel::update(user_transactions.find(transaction.id))
-    //         .set(status.eq(invoice_lookup.status))
-    //         .returning(InvoiceDetails::as_returning())
-    //         .get_result(connection)
-    //         .unwrap();
-    // }
+    //for transaction in all_user_transactions {
+        //println!("{:?}", transaction)
+        // let payment_add=base64::decode(transaction.payment_addr);
+        // let invoice_lookup =invoices::invoice_look_up(payment_add).await;
+        //
+        // diesel::update(user_transactions.find(transaction.id))
+        //     .set(status.eq(invoice_lookup.status))
+        //     .returning(InvoiceDetails::as_returning())
+        //     .get_result(connection)
+        //     .unwrap();
+    //}
 }
 
 

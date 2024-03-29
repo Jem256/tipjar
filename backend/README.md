@@ -1,14 +1,12 @@
 # tipjar
 
-## Env File Content
+## Env File Contents
 DATABASE_URL=postgres://<POSTGRES_user>:<POSTGRES_db password>@localhost/<POSTGRES_db_name>
 
 The values below are obtained from your polar node
-```
 ADDRESS=https://{GRPC Host}
 CERT_FILE_PATH=TLS Cert
 MACAROON_FILE_PATH=Admin Macaroon
-```
 
 ## Docker Set Up
 

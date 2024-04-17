@@ -1,19 +1,17 @@
 use rand::distributions::{Alphanumeric, DistString};
 use tonic_lnd;
 use sha2::{Sha256, Digest};
+
 use tonic_lnd::Client;
+use std::env;
+use dotenvy::dotenv;
 
+pub async  fn connect(amount: i32)-> InvoiceResponse{
+    dotenv().ok();
 
-
-
-pub async  fn connect()-> Client{
-
-
-    let address="https://127.0.0.1:10001";
-    //let cert_file_path ="/Users/jose/.polar/networks/1/volumes/lnd/alice/tls.cert";
-
-    let cert_file_path="/Users/jose/.polar/networks/2/volumes/lnd/alice/tls.cert";
-    let macaroon_file_path="/Users/jose/.polar/networks/2/volumes/lnd/alice/data/chain/bitcoin/regtest/admin.macaroon";
+    let address= env::var("ADDRESS").expect("ADDRESS must be set");
+    let cert_file_path= env::var("CERT_FILE_PATH").expect("CERT_FILE_PATH must be set");
+    let macaroon_file_path= env::var("MACAROON_FILE_PATH").expect("MACAROON_FILE_PATH must be set");
 
     let cert_path = cert_file_path.to_string();
     let macaroon_path = macaroon_file_path.to_string();

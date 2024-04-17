@@ -6,7 +6,7 @@ use tonic_lnd::Client;
 use std::env;
 use dotenvy::dotenv;
 
-pub async  fn connect(amount: i32)-> InvoiceResponse{
+pub async  fn connect()-> InvoiceResponse{
     dotenv().ok();
 
     let address= env::var("ADDRESS").expect("ADDRESS must be set");

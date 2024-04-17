@@ -5,7 +5,7 @@ use diesel::prelude::*;
 use rocket::{get, launch, post, routes};
 use crate::schema::users::dsl::*;
 use rocket::serde::json::Json;
-use crate::invoices::invoice_look_up;
+use crate::invoice::invoice_look_up;
 use rocket::http::Header;
 use rocket::{Request, Response};
 use rocket::fairing::{Fairing, Info, Kind};
@@ -19,7 +19,7 @@ mod database;
 mod schema;
 mod models;
 
-mod invoices;
+mod invoice;
 
 mod lnd;
 
@@ -142,9 +142,9 @@ pub async fn generate_invoice(req_slug:String, payment_details: Json<PaymentDeta
         .first(connection);
     match user_result {
         Ok(user) => {
-            //print!("{:?}", user);
-            let invoice_response = lnd::connect(payment_details.amount_in_satoshi).await;
-            //println!("{:?}", invoice_response.payment_addr);
+
+            let invoice_response = invoice::create_invoice(payment_details.amount_in_satoshi).await;
+
             let payment_addr_string=base64::encode(invoice_response.payment_addr);
 
             //let payment_add=base64::decode(payment_addr_string.clone()).unwrap();
@@ -197,7 +197,7 @@ pub async fn refresh_invoice(incoming_user_id:i32){
             for transaction in transactions {
                 // Do something with each transaction here
                 let payment_add=base64::decode(transaction.payment_addr).unwrap();
-                let invoice_lookup =invoices::invoice_look_up(payment_add).await;
+                let invoice_lookup = invoice::invoice_look_up(payment_add).await;
                if invoice_lookup.status > 0 {
                    new_balance += transaction.amount_in_satoshi;
                    diesel::update(user_transactions.find(transaction.id))

@@ -1,13 +1,10 @@
 #[macro_use] 
 extern crate rocket;
 extern crate rocket_cors;
-mod lnd;
 
 use diesel::prelude::*;
 use rocket::{get, launch, post, routes};
 use crate::schema::users::dsl::*;
-use rocket::serde::json::Json;
-use crate::invoice::invoice_look_up;
 use rocket::http::Header;
 use rocket::{Request, Response};
 use rocket::fairing::{Fairing, Info, Kind};
@@ -25,7 +22,7 @@ mod invoice;
 
 mod lnd;
 
-pub struct Cors;
+
 
 pub struct Cron;
 

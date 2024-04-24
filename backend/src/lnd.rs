@@ -6,7 +6,7 @@ use tonic_lnd::Client;
 use std::env;
 use dotenvy::dotenv;
 
-pub async  fn connect()-> InvoiceResponse{
+pub async  fn connect()-> Result<Client, Err>{
     dotenv().ok();
 
     let address= env::var("ADDRESS").expect("ADDRESS must be set");
@@ -21,7 +21,7 @@ pub async  fn connect()-> InvoiceResponse{
         .await
         .expect("failed to connect");
 
-    client
+    Ok(client)
 
 }
 

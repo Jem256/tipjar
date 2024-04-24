@@ -1,4 +1,4 @@
-#[macro_use] 
+
 extern crate rocket;
 extern crate rocket_cors;
 
@@ -22,16 +22,13 @@ mod invoice;
 
 mod lnd;
 
-
-
-pub struct Cron;
-
-
 use rocket::http::Method;
+use rocket::serde::json::Json;
 
 use rocket_cors::{
     AllowedOrigins, AllowedHeaders, Cors, CorsOptions
 };
+use crate::invoice::Invoice;
 
 fn make_cors() -> Cors {
     let allowed_origins = AllowedOrigins::some_exact(&[
@@ -150,28 +147,31 @@ pub async fn generate_invoice(req_slug:String, payment_details: Json<PaymentDeta
     match user_result {
         Ok(user) => {
 
-            let invoice_response = invoice::create_invoice(payment_details.amount_in_satoshi).await;
+            let invoice_response = Invoice::create_invoice(payment_details.amount_in_satoshi).await;
+            match invoice_response {
+                Ok(inv)=>{
+                    let payment_addr_string=base64::encode(inv.payment_addr);
+                    let payment_request= inv.payment_request;
+                    let invoice_details = InvoiceDetails {
+                        amount_in_satoshi: payment_details.amount_in_satoshi,
+                        payment_request,
+                        payment_addr:payment_addr_string,
+                        user_id:user.id,
+                        status:0
+                    };
+                    diesel::insert_into(user_transactions::table)
+                        .values(&invoice_details)
+                        .execute(connection)
+                        .expect("Error saving invoice");
+                    Json(invoice_details)
+                }
+                Err(err) => {
+                    let res = InvoiceDetails { payment_request: "".parse().unwrap(), amount_in_satoshi: 0,payment_addr:"".to_string(),user_id:0,status:0 };
+                    Json(res)
+                }
+            }
 
-            let payment_addr_string=base64::encode(invoice_response.payment_addr);
 
-            //let payment_add=base64::decode(payment_addr_string.clone()).unwrap();
-
-            //println!("{:?}", payment_add);
-            //save the payment request and the amount in a user transactions table
-            //payment_request,amount and status,user_id,slug
-
-            let invoice_details = InvoiceDetails {
-                amount_in_satoshi: payment_details.amount_in_satoshi,
-                payment_request:invoice_response.payment_request,
-                payment_addr:payment_addr_string,
-                user_id:user.id,
-                status:0
-            };
-            diesel::insert_into(user_transactions::table)
-                .values(&invoice_details)
-                .execute(connection)
-                .expect("Error saving invoice");
-            Json(invoice_details)
             // Now you can use id, email, slug, and balance variables
         }
 
@@ -204,7 +204,7 @@ pub async fn refresh_invoice(incoming_user_id:i32){
             for transaction in transactions {
                 // Do something with each transaction here
                 let payment_add=base64::decode(transaction.payment_addr).unwrap();
-                let invoice_lookup = invoice::invoice_look_up(payment_add).await;
+                let invoice_lookup = Invoice::invoice_look_up(payment_add).await;
                if invoice_lookup.status > 0 {
                    new_balance += transaction.amount_in_satoshi;
                    diesel::update(user_transactions.find(transaction.id))

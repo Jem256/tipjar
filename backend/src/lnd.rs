@@ -4,9 +4,10 @@ use sha2::{Sha256, Digest};
 
 use tonic_lnd::Client;
 use std::env;
+use std::fmt::Error;
 use dotenvy::dotenv;
 
-pub async  fn connect()-> Result<Client, Err>{
+pub async  fn connect()-> Client{
     dotenv().ok();
 
     let address= env::var("ADDRESS").expect("ADDRESS must be set");
@@ -21,7 +22,7 @@ pub async  fn connect()-> Result<Client, Err>{
         .await
         .expect("failed to connect");
 
-    Ok(client)
+    client
 
 }
 

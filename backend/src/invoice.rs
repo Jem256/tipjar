@@ -1,8 +1,9 @@
 use std::collections::HashMap;
+use std::fmt::Error;
 use std::sync::Arc;
 use std::time::Duration;
 use rand::distributions::{Alphanumeric, DistString};
-use sha2::Sha256;
+use sha2::{Sha256, Digest};
 use tonic_lnd;
 use tonic_lnd::invoicesrpc::lookup_invoice_msg::InvoiceRef;
 use tonic_lnd::invoicesrpc::LookupInvoiceMsg;
@@ -31,8 +32,8 @@ impl  Invoice{
             invoice_state
         }
     }
-    pub async  fn create_invoice(amount: i32)-> Invoice{
-        let client = connect();
+    pub  async  fn create_invoice(amount: i32)-> Result<Invoice, Error>{
+        let mut client = connect().await;
         let hex_preimage = Alphanumeric.sample_string(&mut rand::thread_rng(), 32);
 
         let payment_description = b"descriptionas";
@@ -83,7 +84,7 @@ impl  Invoice{
     }
     pub async  fn invoice_look_up(payment_addr: Vec<u8>)-> InvoiceStatus{
         //connect to the node
-        let client = connect();
+        let mut client = connect().await;
 
         let invoice_lookup=client.invoices()
             .lookup_invoice_v2(LookupInvoiceMsg{ lookup_modifier: 1, invoice_ref: Option::from(InvoiceRef::PaymentAddr(payment_addr)) })
@@ -94,6 +95,3 @@ impl  Invoice{
 
     }
 }
-
-
-

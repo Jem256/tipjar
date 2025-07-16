@@ -1,4 +1,4 @@
-FROM rust:1.77.0 as builder
+FROM rust:1.88.0 as builder
 
 WORKDIR /app
 
@@ -18,6 +18,16 @@ RUN cargo build --release
 
 
 FROM debian:buster-slim
+
+RUN sed -i 's|deb.debian.org|archive.debian.org|g' /etc/apt/sources.list \
+    && apt-get update \
+    && apt-get install -y libpq5 \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install libpq runtime dependency
+RUN apt-get update \
+    && apt-get install -y libpq5 \
+    && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /usr/local/bin
 

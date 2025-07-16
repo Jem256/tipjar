@@ -16,17 +16,29 @@ Tipjar is a platform designed to empower content creators by enabling audiences 
 ## Backend Setup
 
 1. **Install Rust**: If you haven't installed Rust, you can do so by following the instructions on [rustup.rs](https://rustup.rs/).
-2. **Install Diesel CLI**: 
+
+2. **Install Essentials**:
+``` bash
+sudo apt update
+sudo apt install build-essential
+sudo apt install libpq-dev
+sudo apt install protobuf-compiler
+
+```
+
+3. **Install Diesel CLI**: 
     ```bash
     cargo install diesel_cli --no-default-features --features postgres
     ```
-3. **Database Setup**: 
+4. **Database Setup**: 
     - Create a `.env` file and configure your database connection string.
+    - Env File Contents: 
+      DATABASE_URL=postgres://<POSTGRES_user>:<POSTGRES_db password>@localhost/<POSTGRES_db_name>
     - Run migrations using Diesel:
       ```bash
       diesel migration run
       ```
-4. **Run Backend**: 
+5. **Run Backend**: 
     ```bash
     cargo run
     ```
